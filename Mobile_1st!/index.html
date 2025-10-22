@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AeroVista Presents — Where Vision Takes Flight · Vol. ONE</title>
+  <link rel="icon" type="image/png" href="assets/img/aerovista_anthem.png" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>AeroVista Presents — <em>Where Vision Takes Flight</em></h1>
+        <div class="subtitle">Volume One · Eight Divisions, One Vision</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Left: Album Art Slideshow -->
+    <section class="panel">
+      <div class="slideshow-container">
+        <div class="slideshow" id="slideshow"></div>
+        <div class="slideshow-controls">
+          <button id="prevSlide" class="slide-btn" aria-label="Previous Cover">‹</button>
+          <div class="slide-indicators" id="indicators" aria-label="Cover position"></div>
+          <button id="nextSlide" class="slide-btn" aria-label="Next Cover">›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Player -->
+    <section class="panel">
+      <div class="player">
+        <audio id="audio" crossorigin="anonymous"></audio>
+        <div class="row">
+          <button id="prev" title="Previous Track">⏮</button>
+          <button id="play" class="primary">► Play</button>
+          <button id="next" title="Next Track">⏭</button>
+          <div class="seek" title="Seek"><div class="fill" id="seekFill"></div></div>
+          <div id="time">0:00 / 0:00</div>
+        </div>
+        <div class="row">
+          <div class="control">
+            <label for="bass">Bass</label>
+            <div class="slider-container">
+              <button class="eq-btn minus" data-target="bass">−</button>
+              <input id="bass" type="range" min="-12" max="12" value="0" step="1" />
+              <button class="eq-btn plus" data-target="bass">+</button>
+            </div>
+            <div class="value-display" id="bassValue">0dB</div>
+          </div>
+          <div class="control">
+            <label for="vol">Volume</label>
+            <div class="slider-container">
+              <button class="eq-btn minus" data-target="vol">−</button>
+              <input id="vol" type="range" min="0" max="1" value="0.9" step="0.01" />
+              <button class="eq-btn plus" data-target="vol">+</button>
+            </div>
+            <div class="value-display" id="volValue">90%</div>
+          </div>
+        </div>
+        <canvas id="viz" aria-label="Audio visualizer"></canvas>
+      </div>
+
+      <div class="tracks">
+        <!-- Populated by JS from assets/data/tracks.json -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Store -->
+  <section class="store-section">
+    <div class="brand" style="padding:0 20px 10px">
+      <h2 style="margin:0;font-size:20px;letter-spacing:.08em">Mini‑Store · AeroVista Vol. ONE</h2>
+      <div class="subtitle">Album merch and prints</div>
+    </div>
+    <div class="store-row">
+      <!-- Items injected -->
+    </div>
+  </section>
+
+  <!-- Product Modal -->
+  <div id="productModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .3s ease">
+    <div id="modalContent" style="background:#0e131b;border:1px solid #1e2633;border-radius:16px;padding:30px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto;position:relative">
+      <button id="closeModal" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#9fb0c6;font-size:26px;cursor:pointer">&times;</button>
+      <div id="modalProductImage" style="text-align:center;margin-bottom:18px">
+        <img id="modalImage" src="" alt="" style="width:220px;height:220px;object-fit:cover;background:#101725;border-radius:8px;padding:10px">
+      </div>
+      <h2 id="modalTitle" style="color:#e9eef6;font-size:24px;margin:0 0 10px;text-align:center"></h2>
+      <p id="modalPrice" style="color:#d1a85a;font-size:20px;font-weight:bold;margin:0 0 12px;text-align:center"></p>
+      <p id="modalDescription" style="color:#9fb0c6;font-size:15px;margin:0 0 14px;line-height:1.6"></p>
+      <div id="modalFeatures" style="margin:0 0 16px;color:#cbd7ea"></div>
+      <div style="text-align:center">
+        <button id="buyNowBtn" class="checkout-btn" style="background:linear-gradient(135deg,#d1a85a,#b8941f);color:#000;border:none;padding:14px 26px;border-radius:8px;font-weight:800;cursor:pointer;font-size:15px;text-transform:uppercase;letter-spacing:.5px;width:100%">Buy Now</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>© <span id="yr"></span> AeroVista · Volume One — All rights reserved.</footer>
+
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/product-modal.js"></script>
+</body>
+</html>

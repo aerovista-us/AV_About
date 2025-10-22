@@ -85,16 +85,24 @@ function initPlayer(){
   const volCtl = $('#vol');
   const viz = $('#viz');
 
-  const ctx = state.ctx = new (window.AudioContext||window.webkitAudioContext)();
-  const src = ctx.createMediaElementSource(audio);
-  const master = ctx.createGain();
-  const lows = ctx.createBiquadFilter(); lows.type='lowshelf'; lows.frequency.value=110; lows.gain.value=0;
-  const comp = ctx.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=6;
-  const limit = ctx.createDynamicsCompressor(); limit.threshold.value=-3; limit.knee.value=0; limit.ratio.value=20; limit.attack.value=0.001; limit.release.value=0.01;
-  const ana = ctx.createAnalyser(); ana.fftSize=2048; ana.smoothingTimeConstant=0.85;
+  // Initialize AudioContext after user interaction
+  let ctx, src, master, lows, comp, limit, ana;
+  let audioInitialized = false;
+  
+  function initAudioContext() {
+    if (audioInitialized) return;
+    ctx = state.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    src = ctx.createMediaElementSource(audio);
+    master = ctx.createGain();
+    lows = ctx.createBiquadFilter(); lows.type='lowshelf'; lows.frequency.value=110; lows.gain.value=0;
+    comp = ctx.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=6;
+    limit = ctx.createDynamicsCompressor(); limit.threshold.value=-3; limit.knee.value=0; limit.ratio.value=20; limit.attack.value=0.001; limit.release.value=0.01;
+    ana = ctx.createAnalyser(); ana.fftSize=2048; ana.smoothingTimeConstant=0.85;
 
-  src.connect(lows); lows.connect(comp); comp.connect(limit); limit.connect(master); master.connect(ana); ana.connect(ctx.destination);
-  state.nodes = {audio, playBtn, prevBtn, nextBtn, seek, seekFill, time, bassCtl, volCtl, master, lows, ana, viz};
+    src.connect(lows); lows.connect(comp); comp.connect(limit); limit.connect(master); master.connect(ana); ana.connect(ctx.destination);
+    state.nodes = {audio, playBtn, prevBtn, nextBtn, seek, seekFill, time, bassCtl, volCtl, master, lows, ana, viz};
+    audioInitialized = true;
+  }
 
   function setBass(db){ lows.gain.value=db >= 11 ? 12 : db; }
   function setVol(v){ master.gain.value = v; }
@@ -103,6 +111,7 @@ function initPlayer(){
   volCtl.oninput = e => setVol(parseFloat(e.target.value));
 
   playBtn.onclick = async ()=>{
+    initAudioContext(); // Initialize AudioContext on first user interaction
     if(ctx.state==='suspended') await ctx.resume();
     if(audio.paused){ await audio.play(); playBtn.textContent='❚❚ Pause'; } else { audio.pause(); playBtn.textContent='► Play'; }
   };
@@ -142,15 +151,19 @@ function initPlayer(){
   }
   draw();
 
-  // Start with first track
+  // Initialize volume and bass controls
   setVol(parseFloat(volCtl.value));
   setBass(parseFloat(bassCtl.value));
-  playTrack(0);
 }
 
 function fmt(s){ if(!isFinite(s)) return '0:00'; const m=Math.floor(s/60), sec=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${sec}`; }
 
 async function playTrack(i){
+  // Initialize AudioContext if not already done
+  if (typeof initAudioContext === 'function') {
+    initAudioContext();
+  }
+  
   state.idx = i;
   const t = state.tracks[i];
   const {audio, playBtn} = state.nodes;

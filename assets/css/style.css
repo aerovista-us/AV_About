@@ -16,6 +16,11 @@ header{padding:26px 20px;border-bottom:1px solid #1b2432;background:
 h1{margin:0;font-size:clamp(24px,3.4vw,40px);letter-spacing:.04em}
 .subtitle{color:var(--muted);margin-top:4px}
 
+/* Header Navigation */
+.header-nav{display:flex;justify-content:center;margin-top:12px}
+.nav-link{color:var(--gold);text-decoration:none;padding:8px 16px;border:1px solid rgba(209,168,90,.3);border-radius:8px;font-weight:600;transition:all .3s ease}
+.nav-link:hover{background:rgba(209,168,90,.1);border-color:var(--gold);transform:translateY(-1px)}
+
 .wrap{display:grid;grid-template-columns:360px 1fr;gap:24px;padding:20px;max-width:1200px;margin:0 auto}
 @media (max-width: 980px){.wrap{grid-template-columns:1fr}}
 

@@ -47,5 +47,47 @@
     "src": "Audio/The AeroVista Effect_AeroVista LLC.mp3",
     "duration": "3:58",
     "division": "AeroVista LLC"
+  },
+  {
+    "title": "Neural Sparks — Nexus TechWorks (Alt Version)",
+    "cover": "assets/img/neural_sparks.png",
+    "src": "Audio/Neural Sparks_Nexus TechWorks (1).mp3",
+    "duration": "3:18",
+    "division": "Nexus TechWorks"
+  },
+  {
+    "title": "Echo Through the Verse — EchoVerse Audio (Alt Version)",
+    "cover": "assets/img/echo_through_the_verse.png",
+    "src": "Audio/Echo Through the Verse_EchoVerse Audio (1).mp3",
+    "duration": "3:42",
+    "division": "EchoVerse Audio"
+  },
+  {
+    "title": "SkyForge Rising — SkyForge Creative Studios (Alt Version)",
+    "cover": "assets/img/skyforge_rising.png",
+    "src": "Audio/SkyForge Rising_SkyForge Creative Studios (1).mp3",
+    "duration": "3:29",
+    "division": "SkyForge Creative Studios"
+  },
+  {
+    "title": "Lumina Flow — Lumina Creative Media (Alt Version)",
+    "cover": "assets/img/aerovista_anthem.png",
+    "src": "Audio/Lumina Flow_Lumina Creative Media (1).mp3",
+    "duration": "3:21",
+    "division": "Lumina Creative Media"
+  },
+  {
+    "title": "Vespera Dreams — Vespera Publishing (Alt Version)",
+    "cover": "assets/img/vespera_dreams.png",
+    "src": "Audio/Vespera Dreams for Vespera Publishing (1).mp3",
+    "duration": "3:48",
+    "division": "Vespera Publishing"
+  },
+  {
+    "title": "The AeroVista Effect — AeroVista LLC (Alt Version)",
+    "cover": "assets/img/aerovista_effect.png",
+    "src": "Audio/The AeroVista Effect_AeroVista LLC (1).mp3",
+    "duration": "3:58",
+    "division": "AeroVista LLC"
   }
 ]

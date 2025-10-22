@@ -42,6 +42,154 @@ function preloadAudio() {
   });
 }
 
+// Global variables for audio context
+let ctx, src, master, lows, comp, limit, ana;
+let audioInitialized = false;
+
+// Initialize AudioContext after user interaction
+function initAudioContext() {
+  if (audioInitialized) return;
+  const audio = $('#audio');
+  const viz = $('#viz');
+  
+  ctx = state.ctx = new (window.AudioContext||window.webkitAudioContext)();
+  src = ctx.createMediaElementSource(audio);
+  master = ctx.createGain();
+  lows = ctx.createBiquadFilter(); lows.type='lowshelf'; lows.frequency.value=110; lows.gain.value=0;
+  comp = ctx.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=6;
+  limit = ctx.createDynamicsCompressor(); limit.threshold.value=-3; limit.knee.value=0; limit.ratio.value=20; limit.attack.value=0.001; limit.release.value=0.01;
+  ana = ctx.createAnalyser(); ana.fftSize=2048; ana.smoothingTimeConstant=0.85;
+
+  src.connect(lows); lows.connect(comp); comp.connect(limit); limit.connect(master); master.connect(ana); ana.connect(ctx.destination);
+  
+  const playBtn = $('#play');
+  const prevBtn = $('#prev');
+  const nextBtn = $('#next');
+  const seek = document.querySelector('.seek');
+  const seekFill = $('#seekFill');
+  const time = $('#time');
+  const bassCtl = $('#bass');
+  const volCtl = $('#vol');
+  
+  state.nodes = {audio, playBtn, prevBtn, nextBtn, seek, seekFill, time, bassCtl, volCtl, master, lows, ana, viz};
+
+  // Initialize aviation-themed visualizer after AudioContext is ready
+  const g = viz.getContext('2d');
+  const buffer = new Uint8Array(ana.frequencyBinCount);
+  let flightTrails = [];
+  let radarSweep = 0;
+  
+  // Ensure canvas has proper dimensions
+  function resizeCanvas() {
+    const rect = viz.getBoundingClientRect();
+    viz.width = rect.width * devicePixelRatio;
+    viz.height = rect.height * devicePixelRatio;
+    g.scale(devicePixelRatio, devicePixelRatio);
+  }
+  
+  resizeCanvas();
+  
+  // Handle window resize
+  window.addEventListener('resize', resizeCanvas);
+  
+  function draw(){
+    requestAnimationFrame(draw);
+    
+    // Ensure canvas dimensions are correct
+    if (viz.clientWidth === 0) return;
+    
+    ana.getByteFrequencyData(buffer);
+    const w = viz.clientWidth;
+    const h = viz.clientHeight;
+    g.clearRect(0,0,w,h);
+    
+    // Aviation-themed visualizer
+    const bars = 64, step = Math.floor(buffer.length/bars);
+    const centerY = h / 2;
+    
+    // Create flight trails based on audio data
+    for(let i=0;i<bars;i++){
+      const v = buffer[i*step]/255;
+      const x = (i/bars)*w;
+      const intensity = Math.max(v * 0.8, 0.1); // Minimum intensity for visibility
+      
+      // Flight path visualization
+      const trailY = centerY + (Math.sin(i * 0.3) * 20 * intensity);
+      const trailHeight = 3 + intensity * 8;
+      
+      // AeroVista brand colors: gold to blue gradient
+      const r = Math.floor(209 + (137-209) * intensity); // Gold to blue
+      const g_val = Math.floor(168 + (200-168) * intensity);
+      const b = Math.floor(90 + (255-90) * intensity);
+      
+      // Draw flight trail
+      g.fillStyle = `rgba(${r}, ${g_val}, ${b}, ${0.6 + intensity * 0.4})`;
+      g.fillRect(x, trailY - trailHeight/2, 2, trailHeight);
+      
+      // Add radar sweep effect
+      if (i % 8 === 0) {
+        g.strokeStyle = `rgba(137, 200, 255, ${0.3 + intensity * 0.4})`;
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(x, centerY - 30);
+        g.lineTo(x, centerY + 30);
+        g.stroke();
+      }
+    }
+    
+    // Radar sweep animation
+    radarSweep += 0.02;
+    g.strokeStyle = `rgba(209, 168, 90, 0.4)`;
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(w/2, centerY, 30, radarSweep, radarSweep + 0.5);
+    g.stroke();
+    
+    // Center crosshair (aviation style)
+    g.strokeStyle = 'rgba(209, 168, 90, 0.6)';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(w/2 - 10, centerY);
+    g.lineTo(w/2 + 10, centerY);
+    g.moveTo(w/2, centerY - 10);
+    g.lineTo(w/2, centerY + 10);
+    g.stroke();
+  }
+  draw();
+
+  audioInitialized = true;
+}
+
+// Unified play control function - now global
+async function handlePlay(trackIndex = null) {
+  initAudioContext(); // Initialize AudioContext on first user interaction
+  if(state.ctx && state.ctx.state==='suspended') await state.ctx.resume();
+
+  const audio = $('#audio');
+  const playBtn = $('#play');
+
+  // If a specific track is requested, load it
+  if (trackIndex !== null) {
+    await playTrack(trackIndex);
+    return;
+  }
+
+  // If no track is loaded, start with the first track
+  if(!audio.src || audio.src === '') {
+    await playTrack(0);
+    return;
+  }
+
+  // Toggle play/pause for current track
+  if(audio.paused){
+    await audio.play();
+    playBtn.textContent='❚❚ Pause';
+  } else {
+    audio.pause();
+    playBtn.textContent='► Play';
+  }
+}
+
 function buildSlideshow(){
   const slideWrap = $('#slideshow');
   const dots = $('#indicators');
@@ -105,109 +253,6 @@ function initPlayer(){
   const volCtl = $('#vol');
   const viz = $('#viz');
 
-  // Initialize AudioContext after user interaction
-  let ctx, src, master, lows, comp, limit, ana;
-  let audioInitialized = false;
-  
-  function initAudioContext() {
-    if (audioInitialized) return;
-    ctx = state.ctx = new (window.AudioContext||window.webkitAudioContext)();
-    src = ctx.createMediaElementSource(audio);
-    master = ctx.createGain();
-    lows = ctx.createBiquadFilter(); lows.type='lowshelf'; lows.frequency.value=110; lows.gain.value=0;
-    comp = ctx.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=6;
-    limit = ctx.createDynamicsCompressor(); limit.threshold.value=-3; limit.knee.value=0; limit.ratio.value=20; limit.attack.value=0.001; limit.release.value=0.01;
-    ana = ctx.createAnalyser(); ana.fftSize=2048; ana.smoothingTimeConstant=0.85;
-
-    src.connect(lows); lows.connect(comp); comp.connect(limit); limit.connect(master); master.connect(ana); ana.connect(ctx.destination);
-    state.nodes = {audio, playBtn, prevBtn, nextBtn, seek, seekFill, time, bassCtl, volCtl, master, lows, ana, viz};
-    
-    // Initialize aviation-themed visualizer after AudioContext is ready
-    const g = viz.getContext('2d');
-    const buffer = new Uint8Array(ana.frequencyBinCount);
-    let flightTrails = [];
-    let radarSweep = 0;
-    
-    // Ensure canvas has proper dimensions
-    function resizeCanvas() {
-      const rect = viz.getBoundingClientRect();
-      viz.width = rect.width * devicePixelRatio;
-      viz.height = rect.height * devicePixelRatio;
-      g.scale(devicePixelRatio, devicePixelRatio);
-    }
-    
-    resizeCanvas();
-    
-    // Handle window resize
-    window.addEventListener('resize', resizeCanvas);
-    
-    function draw(){
-      requestAnimationFrame(draw);
-      
-      // Ensure canvas dimensions are correct
-      if (viz.clientWidth === 0) return;
-      
-      ana.getByteFrequencyData(buffer);
-      const w = viz.clientWidth;
-      const h = viz.clientHeight;
-      g.clearRect(0,0,w,h);
-      
-      // Aviation-themed visualizer
-      const bars = 64, step = Math.floor(buffer.length/bars);
-      const centerY = h / 2;
-      
-      // Create flight trails based on audio data
-      for(let i=0;i<bars;i++){
-        const v = buffer[i*step]/255;
-        const x = (i/bars)*w;
-        const intensity = Math.max(v * 0.8, 0.1); // Minimum intensity for visibility
-        
-        // Flight path visualization
-        const trailY = centerY + (Math.sin(i * 0.3) * 20 * intensity);
-        const trailHeight = 3 + intensity * 8;
-        
-        // AeroVista brand colors: gold to blue gradient
-        const r = Math.floor(209 + (137-209) * intensity); // Gold to blue
-        const g_val = Math.floor(168 + (200-168) * intensity);
-        const b = Math.floor(90 + (255-90) * intensity);
-        
-        // Draw flight trail
-        g.fillStyle = `rgba(${r}, ${g_val}, ${b}, ${0.6 + intensity * 0.4})`;
-        g.fillRect(x, trailY - trailHeight/2, 2, trailHeight);
-        
-        // Add radar sweep effect
-        if (i % 8 === 0) {
-          g.strokeStyle = `rgba(137, 200, 255, ${0.3 + intensity * 0.4})`;
-          g.lineWidth = 1;
-          g.beginPath();
-          g.moveTo(x, centerY - 30);
-          g.lineTo(x, centerY + 30);
-          g.stroke();
-        }
-      }
-      
-      // Radar sweep animation
-      radarSweep += 0.02;
-      g.strokeStyle = `rgba(209, 168, 90, 0.4)`;
-      g.lineWidth = 2;
-      g.beginPath();
-      g.arc(w/2, centerY, 30, radarSweep, radarSweep + 0.5);
-      g.stroke();
-      
-      // Center crosshair (aviation style)
-      g.strokeStyle = 'rgba(209, 168, 90, 0.6)';
-      g.lineWidth = 1;
-      g.beginPath();
-      g.moveTo(w/2 - 10, centerY);
-      g.lineTo(w/2 + 10, centerY);
-      g.moveTo(w/2, centerY - 10);
-      g.lineTo(w/2, centerY + 10);
-      g.stroke();
-    }
-    draw();
-    
-    audioInitialized = true;
-  }
 
   function setBass(db){ if(state.nodes && state.nodes.lows) state.nodes.lows.gain.value=db >= 11 ? 12 : db; }
   function setVol(v){ if(state.nodes && state.nodes.master) state.nodes.master.gain.value = v; }
@@ -215,32 +260,6 @@ function initPlayer(){
   bassCtl.oninput = e => setBass(parseFloat(e.target.value));
   volCtl.oninput = e => setVol(parseFloat(e.target.value));
 
-  // Unified play control - handles both main play button and track selection
-  async function handlePlay(trackIndex = null) {
-    initAudioContext(); // Initialize AudioContext on first user interaction
-    if(state.ctx && state.ctx.state==='suspended') await state.ctx.resume();
-    
-    // If a specific track is requested, load it
-    if (trackIndex !== null) {
-      await playTrack(trackIndex);
-      return;
-    }
-    
-    // If no track is loaded, start with the first track
-    if(!audio.src || audio.src === '') {
-      await playTrack(0);
-      return;
-    }
-    
-    // Toggle play/pause for current track
-    if(audio.paused){ 
-      await audio.play(); 
-      playBtn.textContent='❚❚ Pause'; 
-    } else { 
-      audio.pause(); 
-      playBtn.textContent='► Play'; 
-    }
-  }
   
   playBtn.onclick = () => handlePlay();
   prevBtn.onclick = ()=> playTrack((state.idx-1+state.tracks.length)%state.tracks.length);

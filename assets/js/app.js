@@ -18,8 +18,28 @@ async function bootstrap(){
   buildTrackList();
   initPlayer();
   buildStore();
+  preloadAudio(); // Preload audio for better performance
   // Year
   $('#yr').textContent = new Date().getFullYear();
+}
+
+// Preload audio files for better performance
+function preloadAudio() {
+  const audio = $('#audio');
+  const preloadPromises = state.tracks.map(track => {
+    return new Promise((resolve) => {
+      const testAudio = new Audio();
+      testAudio.preload = 'metadata';
+      testAudio.onloadedmetadata = () => resolve();
+      testAudio.onerror = () => resolve(); // Continue even if some fail
+      testAudio.src = track.src;
+    });
+  });
+  
+  // Preload in background
+  Promise.allSettled(preloadPromises).then(() => {
+    console.log('Audio preloading completed');
+  });
 }
 
 function buildSlideshow(){
@@ -69,7 +89,7 @@ function buildTrackList(){
     const btn = e.target.closest('button[data-play]');
     if(!btn) return;
     const i = parseInt(btn.dataset.play,10);
-    await playTrack(i);
+    await handlePlay(i); // Use unified play control
   });
 }
 
@@ -187,9 +207,16 @@ function initPlayer(){
   bassCtl.oninput = e => setBass(parseFloat(e.target.value));
   volCtl.oninput = e => setVol(parseFloat(e.target.value));
 
-  playBtn.onclick = async ()=>{
+  // Unified play control - handles both main play button and track selection
+  async function handlePlay(trackIndex = null) {
     initAudioContext(); // Initialize AudioContext on first user interaction
     if(state.ctx && state.ctx.state==='suspended') await state.ctx.resume();
+    
+    // If a specific track is requested, load it
+    if (trackIndex !== null) {
+      await playTrack(trackIndex);
+      return;
+    }
     
     // If no track is loaded, start with the first track
     if(!audio.src || audio.src === '') {
@@ -197,8 +224,17 @@ function initPlayer(){
       return;
     }
     
-    if(audio.paused){ await audio.play(); playBtn.textContent='❚❚ Pause'; } else { audio.pause(); playBtn.textContent='► Play'; }
-  };
+    // Toggle play/pause for current track
+    if(audio.paused){ 
+      await audio.play(); 
+      playBtn.textContent='❚❚ Pause'; 
+    } else { 
+      audio.pause(); 
+      playBtn.textContent='► Play'; 
+    }
+  }
+  
+  playBtn.onclick = () => handlePlay();
   prevBtn.onclick = ()=> playTrack((state.idx-1+state.tracks.length)%state.tracks.length);
   nextBtn.onclick = ()=> playTrack((state.idx+1)%state.tracks.length);
 
@@ -238,14 +274,25 @@ async function playTrack(i){
   state.idx = i;
   const t = state.tracks[i];
   const {audio, playBtn} = state.nodes;
-  audio.src = t.src;
+  
+  // Update UI first for better UX
   $$('.track').forEach(e=>e.classList.remove('playing'));
   const row = document.querySelector(`.track[data-track="${i}"]`);
   if(row) row.classList.add('playing');
-  await state.ctx.resume();
-  await audio.play();
-  playBtn.textContent='❚❚ Pause';
   goSlide(i);
+  
+  // Load and play audio
+  audio.src = t.src;
+  audio.load(); // Force reload for better compatibility
+  
+  try {
+    await state.ctx.resume();
+    await audio.play();
+    playBtn.textContent='❚❚ Pause';
+  } catch (error) {
+    console.log('Playback error:', error);
+    playBtn.textContent='► Play';
+  }
 }
 
 // --- Mini Store ---

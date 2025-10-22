@@ -108,11 +108,20 @@ function initPlayer(){
     let flightTrails = [];
     let radarSweep = 0;
     
+    // Ensure canvas has proper dimensions
+    viz.width = viz.clientWidth * devicePixelRatio;
+    viz.height = 200 * devicePixelRatio;
+    g.scale(devicePixelRatio, devicePixelRatio);
+    
     function draw(){
       requestAnimationFrame(draw);
+      
+      // Ensure canvas dimensions are correct
+      if (viz.clientWidth === 0) return;
+      
       ana.getByteFrequencyData(buffer);
-      const w = viz.width = viz.clientWidth * devicePixelRatio;
-      const h = viz.height = 200 * devicePixelRatio;
+      const w = viz.clientWidth;
+      const h = 200;
       g.clearRect(0,0,w,h);
       
       // Aviation-themed visualizer
@@ -123,7 +132,7 @@ function initPlayer(){
       for(let i=0;i<bars;i++){
         const v = buffer[i*step]/255;
         const x = (i/bars)*w;
-        const intensity = v * 0.8;
+        const intensity = Math.max(v * 0.8, 0.1); // Minimum intensity for visibility
         
         // Flight path visualization
         const trailY = centerY + (Math.sin(i * 0.3) * 20 * intensity);

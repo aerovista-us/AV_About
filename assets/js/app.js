@@ -102,24 +102,70 @@ function initPlayer(){
     src.connect(lows); lows.connect(comp); comp.connect(limit); limit.connect(master); master.connect(ana); ana.connect(ctx.destination);
     state.nodes = {audio, playBtn, prevBtn, nextBtn, seek, seekFill, time, bassCtl, volCtl, master, lows, ana, viz};
     
-    // Initialize visualizer after AudioContext is ready
+    // Initialize aviation-themed visualizer after AudioContext is ready
     const g = viz.getContext('2d');
     const buffer = new Uint8Array(ana.frequencyBinCount);
+    let flightTrails = [];
+    let radarSweep = 0;
+    
     function draw(){
       requestAnimationFrame(draw);
       ana.getByteFrequencyData(buffer);
       const w = viz.width = viz.clientWidth * devicePixelRatio;
       const h = viz.height = 200 * devicePixelRatio;
       g.clearRect(0,0,w,h);
+      
+      // Aviation-themed visualizer
       const bars = 64, step = Math.floor(buffer.length/bars);
+      const centerY = h / 2;
+      
+      // Create flight trails based on audio data
       for(let i=0;i<bars;i++){
         const v = buffer[i*step]/255;
         const x = (i/bars)*w;
-        const bw = w/bars*0.8;
-        const bh = v*h*0.8;
-        g.fillStyle = `rgba(${74+v*180}, ${163-v*40}, ${255 - v*120}, ${0.8})`;
-        g.fillRect(x, h-bh, bw, bh);
+        const intensity = v * 0.8;
+        
+        // Flight path visualization
+        const trailY = centerY + (Math.sin(i * 0.3) * 20 * intensity);
+        const trailHeight = 3 + intensity * 8;
+        
+        // AeroVista brand colors: gold to blue gradient
+        const r = Math.floor(209 + (137-209) * intensity); // Gold to blue
+        const g_val = Math.floor(168 + (200-168) * intensity);
+        const b = Math.floor(90 + (255-90) * intensity);
+        
+        // Draw flight trail
+        g.fillStyle = `rgba(${r}, ${g_val}, ${b}, ${0.6 + intensity * 0.4})`;
+        g.fillRect(x, trailY - trailHeight/2, 2, trailHeight);
+        
+        // Add radar sweep effect
+        if (i % 8 === 0) {
+          g.strokeStyle = `rgba(137, 200, 255, ${0.3 + intensity * 0.4})`;
+          g.lineWidth = 1;
+          g.beginPath();
+          g.moveTo(x, centerY - 30);
+          g.lineTo(x, centerY + 30);
+          g.stroke();
+        }
       }
+      
+      // Radar sweep animation
+      radarSweep += 0.02;
+      g.strokeStyle = `rgba(209, 168, 90, 0.4)`;
+      g.lineWidth = 2;
+      g.beginPath();
+      g.arc(w/2, centerY, 30, radarSweep, radarSweep + 0.5);
+      g.stroke();
+      
+      // Center crosshair (aviation style)
+      g.strokeStyle = 'rgba(209, 168, 90, 0.6)';
+      g.lineWidth = 1;
+      g.beginPath();
+      g.moveTo(w/2 - 10, centerY);
+      g.lineTo(w/2 + 10, centerY);
+      g.moveTo(w/2, centerY - 10);
+      g.lineTo(w/2, centerY + 10);
+      g.stroke();
     }
     draw();
     

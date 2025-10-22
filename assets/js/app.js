@@ -181,6 +181,13 @@ function initPlayer(){
   playBtn.onclick = async ()=>{
     initAudioContext(); // Initialize AudioContext on first user interaction
     if(state.ctx && state.ctx.state==='suspended') await state.ctx.resume();
+    
+    // If no track is loaded, start with the first track
+    if(!audio.src || audio.src === '') {
+      await playTrack(0);
+      return;
+    }
+    
     if(audio.paused){ await audio.play(); playBtn.textContent='❚❚ Pause'; } else { audio.pause(); playBtn.textContent='► Play'; }
   };
   prevBtn.onclick = ()=> playTrack((state.idx-1+state.tracks.length)%state.tracks.length);

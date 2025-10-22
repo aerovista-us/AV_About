@@ -101,11 +101,33 @@ function initPlayer(){
 
     src.connect(lows); lows.connect(comp); comp.connect(limit); limit.connect(master); master.connect(ana); ana.connect(ctx.destination);
     state.nodes = {audio, playBtn, prevBtn, nextBtn, seek, seekFill, time, bassCtl, volCtl, master, lows, ana, viz};
+    
+    // Initialize visualizer after AudioContext is ready
+    const g = viz.getContext('2d');
+    const buffer = new Uint8Array(ana.frequencyBinCount);
+    function draw(){
+      requestAnimationFrame(draw);
+      ana.getByteFrequencyData(buffer);
+      const w = viz.width = viz.clientWidth * devicePixelRatio;
+      const h = viz.height = 200 * devicePixelRatio;
+      g.clearRect(0,0,w,h);
+      const bars = 64, step = Math.floor(buffer.length/bars);
+      for(let i=0;i<bars;i++){
+        const v = buffer[i*step]/255;
+        const x = (i/bars)*w;
+        const bw = w/bars*0.8;
+        const bh = v*h*0.8;
+        g.fillStyle = `rgba(${74+v*180}, ${163-v*40}, ${255 - v*120}, ${0.8})`;
+        g.fillRect(x, h-bh, bw, bh);
+      }
+    }
+    draw();
+    
     audioInitialized = true;
   }
 
-  function setBass(db){ lows.gain.value=db >= 11 ? 12 : db; }
-  function setVol(v){ master.gain.value = v; }
+  function setBass(db){ if(lows) lows.gain.value=db >= 11 ? 12 : db; }
+  function setVol(v){ if(master) master.gain.value = v; }
 
   bassCtl.oninput = e => setBass(parseFloat(e.target.value));
   volCtl.oninput = e => setVol(parseFloat(e.target.value));
@@ -130,26 +152,7 @@ function initPlayer(){
     if(isFinite(audio.duration)) audio.currentTime = Math.max(0, Math.min(1,p)) * audio.duration;
   });
 
-  // Visualizer
-  const g = viz.getContext('2d');
-  const buffer = new Uint8Array(ana.frequencyBinCount);
-  function draw(){
-    requestAnimationFrame(draw);
-    ana.getByteFrequencyData(buffer);
-    const w = viz.width = viz.clientWidth * devicePixelRatio;
-    const h = viz.height = 200 * devicePixelRatio;
-    g.clearRect(0,0,w,h);
-    const bars = 64, step = Math.floor(buffer.length/bars);
-    for(let i=0;i<bars;i++){
-      const v = buffer[i*step]/255;
-      const x = (i/bars)*w;
-      const bw = w/bars*0.8;
-      const bh = v*h*0.8;
-      g.fillStyle = `rgba(${74+v*180}, ${163-v*40}, ${255 - v*120}, ${0.8})`;
-      g.fillRect(x, h-bh, bw, bh);
-    }
-  }
-  draw();
+  // Visualizer will be initialized after AudioContext is created
 
   // Initialize volume and bass controls
   setVol(parseFloat(volCtl.value));
@@ -162,6 +165,12 @@ async function playTrack(i){
   // Initialize AudioContext if not already done
   if (typeof initAudioContext === 'function') {
     initAudioContext();
+  }
+  
+  // Wait a moment for AudioContext to be ready
+  if (!state.nodes || !state.ctx) {
+    console.log('AudioContext not ready yet');
+    return;
   }
   
   state.idx = i;

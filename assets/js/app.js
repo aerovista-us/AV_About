@@ -172,15 +172,15 @@ function initPlayer(){
     audioInitialized = true;
   }
 
-  function setBass(db){ if(lows) lows.gain.value=db >= 11 ? 12 : db; }
-  function setVol(v){ if(master) master.gain.value = v; }
+  function setBass(db){ if(state.nodes && state.nodes.lows) state.nodes.lows.gain.value=db >= 11 ? 12 : db; }
+  function setVol(v){ if(state.nodes && state.nodes.master) state.nodes.master.gain.value = v; }
 
   bassCtl.oninput = e => setBass(parseFloat(e.target.value));
   volCtl.oninput = e => setVol(parseFloat(e.target.value));
 
   playBtn.onclick = async ()=>{
     initAudioContext(); // Initialize AudioContext on first user interaction
-    if(ctx.state==='suspended') await ctx.resume();
+    if(state.ctx && state.ctx.state==='suspended') await state.ctx.resume();
     if(audio.paused){ await audio.play(); playBtn.textContent='❚❚ Pause'; } else { audio.pause(); playBtn.textContent='► Play'; }
   };
   prevBtn.onclick = ()=> playTrack((state.idx-1+state.tracks.length)%state.tracks.length);

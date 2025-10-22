@@ -69,4 +69,28 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
 .store-item h3{margin:8px 0 6px}
 .price{color:var(--gold);font-size:18px;font-weight:700;margin:0 0 10px}
 
+/* Visualizer Canvas */
+#viz {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, #0a0f16, #0e131b);
+  border-radius: 12px;
+  border: 1px solid #1e2633;
+  margin-top: 12px;
+  display: block;
+}
+
+/* Responsive visualizer */
+@media (max-width: 768px) {
+  #viz {
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  #viz {
+    height: 120px;
+  }
+}
+
 footer{padding:20px;color:var(--muted);text-align:center;margin-top:24px}

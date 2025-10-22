@@ -129,9 +129,17 @@ function initPlayer(){
     let radarSweep = 0;
     
     // Ensure canvas has proper dimensions
-    viz.width = viz.clientWidth * devicePixelRatio;
-    viz.height = 200 * devicePixelRatio;
-    g.scale(devicePixelRatio, devicePixelRatio);
+    function resizeCanvas() {
+      const rect = viz.getBoundingClientRect();
+      viz.width = rect.width * devicePixelRatio;
+      viz.height = rect.height * devicePixelRatio;
+      g.scale(devicePixelRatio, devicePixelRatio);
+    }
+    
+    resizeCanvas();
+    
+    // Handle window resize
+    window.addEventListener('resize', resizeCanvas);
     
     function draw(){
       requestAnimationFrame(draw);
@@ -141,7 +149,7 @@ function initPlayer(){
       
       ana.getByteFrequencyData(buffer);
       const w = viz.clientWidth;
-      const h = 200;
+      const h = viz.clientHeight;
       g.clearRect(0,0,w,h);
       
       // Aviation-themed visualizer

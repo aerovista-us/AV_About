@@ -1,0 +1,65 @@
+[
+  {
+    "title": "Where Vision Takes Flight \u2014 AeroVista Anthem",
+    "cover": "assets/img/aerovista_anthem.png",
+    "src": "Audio/Where Vision Takes Flight — AeroVista Anthem.mp3",
+    "duration": "3:26",
+    "division": "AeroVista"
+  },
+  {
+    "title": "Neural Sparks \u2014 Nexus TechWorks",
+    "cover": "assets/img/neural_sparks.png",
+    "src": "Audio/Neural Sparks — Nexus TechWorks.mp3",
+    "duration": "3:18",
+    "division": "Nexus TechWorks"
+  },
+  {
+    "title": "Echo Through the Verse \u2014 EchoVerse Audio",
+    "cover": "assets/img/echo_through_the_verse.png",
+    "src": "Audio/Echo Through the Verse — EchoVerse Audio.mp3",
+    "duration": "3:42",
+    "division": "EchoVerse Audio"
+  },
+  {
+    "title": "SkyForge Rising \u2014 SkyForge Creative Studios",
+    "cover": "assets/img/skyforge_rising.png",
+    "src": "Audio/SkyForge Rising — SkyForge Creative Studios.mp3",
+    "duration": "3:29",
+    "division": "SkyForge Creative Studios"
+  },
+  {
+    "title": "Summit Mindset \u2014 Summit Learning",
+    "cover": "assets/img/summit_mindset.png",
+    "src": "Audio/Summit Mindset — Summit Learning.mp3",
+    "duration": "3:05",
+    "division": "Summit Learning"
+  },
+  {
+    "title": "Lumina Flow \u2014 Lumina Creative Media",
+    "cover": "assets/img/aerovista_anthem.png",
+    "src": "Audio/Lumina Flow — Lumina Creative Media.mp3",
+    "duration": "3:21",
+    "division": "Lumina Creative Media"
+  },
+  {
+    "title": "Vespera Dreams \u2014 Vespera Publishing",
+    "cover": "assets/img/vespera_dreams.png",
+    "src": "Audio/Vespera Dreams — Vespera Publishing.mp3",
+    "duration": "3:48",
+    "division": "Vespera Publishing"
+  },
+  {
+    "title": "Horizon View \u2014 Horizon Aerial & Visual",
+    "cover": "assets/img/horizon_view.png",
+    "src": "Audio/Horizon View — Horizon Aerial & Visual.mp3",
+    "duration": "3:11",
+    "division": "Horizon Aerial & Visual"
+  },
+  {
+    "title": "The AeroVista Effect \u2014 AeroVista LLC",
+    "cover": "assets/img/aerovista_effect.png",
+    "src": "Audio/The AeroVista Effect — AeroVista LLC.mp3",
+    "duration": "3:58",
+    "division": "AeroVista LLC"
+  }
+]

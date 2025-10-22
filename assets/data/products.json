@@ -1,0 +1,44 @@
+[
+  {
+    "id": "av-sticker-pack",
+    "title": "AeroVista Vol. ONE \u2014 Sticker Pack",
+    "price": 7.5,
+    "images": [
+      "assets/img/aerovista_anthem.png"
+    ],
+    "description": "Glossy kiss-cut stickers featuring the AeroVista core and division glyphs. Weatherproof, matte finish.",
+    "features": [
+      "3x3 and 4x4 options",
+      "Matte UV coating",
+      "Made in USA"
+    ]
+  },
+  {
+    "id": "av-hoodie",
+    "title": "AeroVista \u2014 \u2018Where Vision Takes Flight\u2019 Hoodie",
+    "price": 58.0,
+    "images": [
+      "assets/img/aerovista_anthem.png"
+    ],
+    "description": "Oversized heavyweight hoodie with subtle AV chest print and back \u2018Flight Grid\u2019.",
+    "features": [
+      "Brushed fleece interior",
+      "No drawcords",
+      "True-to-size"
+    ]
+  },
+  {
+    "id": "av-poster",
+    "title": "\u2018The AeroVista Effect\u2019 Poster \u2014 18x18",
+    "price": 24.0,
+    "images": [
+      "assets/img/aerovista_effect.png"
+    ],
+    "description": "Museum-grade poster of the Volume One centerpiece artwork.",
+    "features": [
+      "Matte premium paper",
+      "Archival inks",
+      "Framable"
+    ]
+  }
+]

@@ -1,43 +1,20 @@
-# AeroVista — Where Vision Takes Flight
 
-Welcome to AeroVista, a multi-division company dedicated to innovation, creativity, and excellence across eight specialized divisions.
+# AeroVista Vol. ONE — UltraUltimate Player
 
-## Our Divisions
+A branded web player + mini-store for the *Where Vision Takes Flight — Volume One* collection.
 
-### 🎵 AeroVista
-Our flagship division, setting the tone for innovation and excellence.
+## Quick Start
+1. Drop your MP3s into `/audio/` and match the filenames used in `assets/data/tracks.json`.
+2. Replace cover images in `/assets/img/` if desired.
+3. Edit product details in `assets/data/products.json`.
+4. Open `index.html` in a browser (or host behind any static server).
 
-### 🔧 Nexus TechWorks  
-Cutting-edge technology solutions and development.
+## Deploy
+- GitHub Pages: push this folder to `main` and set Pages to `/` root.
+- Firebase Hosting: `firebase init` → Hosting → deploy.
+- NXCore: serve via NGINX/Traefik as a static site.
 
-### 🎧 EchoVerse Audio
-Professional audio production and sound design.
-
-### 🎨 SkyForge Creative Studios
-Creative design and visual storytelling.
-
-### 📚 Summit Learning
-Educational content and learning solutions.
-
-### 💡 Lumina Creative Media
-Media production and content creation.
-
-### 📖 Vespera Publishing
-Publishing and content distribution.
-
-### 🚁 Horizon Aerial & Visual
-Aerial photography and visual services.
-
-## Contact
-
-- **Email**: aerovistaus@gmail.com
-- **Website**: [Coming Soon]
-- **GitHub**: [aerovista-us](https://github.com/aerovista-us)
-
-## Volume One Collection
-
-Experience our inaugural collection featuring tracks from all eight divisions in *Where Vision Takes Flight — Volume One*.
-
----
-
-© 2024 AeroVista LLC. All rights reserved.
+## Notes
+- Web Audio graph includes bass shelf + limiter to prevent clipping.
+- Visualizer is GPU-friendly (no external libs).
+- Modal/Store is mock checkout — wire to Stripe/Printful when ready.

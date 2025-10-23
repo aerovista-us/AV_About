@@ -103,56 +103,118 @@ function initAudioContext() {
     const h = viz.clientHeight;
     g.clearRect(0,0,w,h);
     
-    // Aviation-themed visualizer
-    const bars = 64, step = Math.floor(buffer.length/bars);
+    // Enhanced aviation-themed visualizer with multiple layers
+    const bars = 128, step = Math.floor(buffer.length/bars);
+    const centerX = w / 2;
     const centerY = h / 2;
     
-    // Create flight trails based on audio data
+    // Calculate overall audio intensity for global effects
+    const avgIntensity = buffer.reduce((sum, val) => sum + val, 0) / buffer.length / 255;
+    const bassIntensity = buffer.slice(0, 8).reduce((sum, val) => sum + val, 0) / 8 / 255;
+    const midIntensity = buffer.slice(8, 32).reduce((sum, val) => sum + val, 0) / 24 / 255;
+    const highIntensity = buffer.slice(32, 64).reduce((sum, val) => sum + val, 0) / 32 / 255;
+    
+    // Background gradient that responds to music
+    const bgGradient = g.createLinearGradient(0, 0, 0, h);
+    bgGradient.addColorStop(0, `rgba(10, 15, 22, ${0.3 + avgIntensity * 0.2})`);
+    bgGradient.addColorStop(0.5, `rgba(14, 19, 27, ${0.2 + bassIntensity * 0.3})`);
+    bgGradient.addColorStop(1, `rgba(16, 23, 37, ${0.4 + highIntensity * 0.2})`);
+    g.fillStyle = bgGradient;
+    g.fillRect(0, 0, w, h);
+    
+    // Enhanced flight trails with multiple frequency bands
     for(let i=0;i<bars;i++){
       const v = buffer[i*step]/255;
       const x = (i/bars)*w;
-      const intensity = Math.max(v * 0.8, 0.1); // Minimum intensity for visibility
+      const intensity = Math.max(v * 0.9, 0.05);
       
-      // Flight path visualization
-      const trailY = centerY + (Math.sin(i * 0.3) * 20 * intensity);
-      const trailHeight = 3 + intensity * 8;
+      // Multiple trail layers for depth
+      const trailY = centerY + (Math.sin(i * 0.2 + radarSweep) * 25 * intensity);
+      const trailHeight = 2 + intensity * 12;
+      const trailWidth = 1 + intensity * 3;
       
-      // AeroVista brand colors: gold to blue gradient
-      const r = Math.floor(209 + (137-209) * intensity); // Gold to blue
-      const g_val = Math.floor(168 + (200-168) * intensity);
-      const b = Math.floor(90 + (255-90) * intensity);
+      // Dynamic color based on frequency and intensity
+      const freqRatio = i / bars;
+      const r = Math.floor(209 + (137-209) * freqRatio + (255-209) * intensity);
+      const g_val = Math.floor(168 + (200-168) * freqRatio + (255-168) * intensity);
+      const b = Math.floor(90 + (255-90) * freqRatio + (255-90) * intensity);
       
-      // Draw flight trail
-      g.fillStyle = `rgba(${r}, ${g_val}, ${b}, ${0.6 + intensity * 0.4})`;
-      g.fillRect(x, trailY - trailHeight/2, 2, trailHeight);
+      // Main trail with glow effect
+      g.fillStyle = `rgba(${r}, ${g_val}, ${b}, ${0.7 + intensity * 0.3})`;
+      g.fillRect(x - trailWidth/2, trailY - trailHeight/2, trailWidth, trailHeight);
       
-      // Add radar sweep effect
-      if (i % 8 === 0) {
-        g.strokeStyle = `rgba(137, 200, 255, ${0.3 + intensity * 0.4})`;
-        g.lineWidth = 1;
-        g.beginPath();
-        g.moveTo(x, centerY - 30);
-        g.lineTo(x, centerY + 30);
-        g.stroke();
+      // Glow effect for high intensity
+      if (intensity > 0.6) {
+        g.fillStyle = `rgba(${r}, ${g_val}, ${b}, ${0.3})`;
+        g.fillRect(x - trailWidth, trailY - trailHeight, trailWidth * 2, trailHeight * 2);
+      }
+      
+      // Secondary frequency trails
+      if (i % 4 === 0) {
+        const secondaryY = centerY + (Math.cos(i * 0.15 + radarSweep * 1.5) * 15 * intensity);
+        g.fillStyle = `rgba(137, 200, 255, ${0.4 + intensity * 0.4})`;
+        g.fillRect(x, secondaryY - 1, 1, 2);
       }
     }
     
-    // Radar sweep animation
-    radarSweep += 0.02;
-    g.strokeStyle = `rgba(209, 168, 90, 0.4)`;
-    g.lineWidth = 2;
+    // Enhanced radar sweep with multiple rings
+    radarSweep += 0.03 + avgIntensity * 0.02;
+    
+    // Outer radar ring
+    g.strokeStyle = `rgba(209, 168, 90, ${0.3 + bassIntensity * 0.4})`;
+    g.lineWidth = 3;
     g.beginPath();
-    g.arc(w/2, centerY, 30, radarSweep, radarSweep + 0.5);
+    g.arc(centerX, centerY, 40 + bassIntensity * 20, radarSweep, radarSweep + 0.8);
     g.stroke();
     
-    // Center crosshair (aviation style)
-    g.strokeStyle = 'rgba(209, 168, 90, 0.6)';
-    g.lineWidth = 1;
+    // Inner radar ring
+    g.strokeStyle = `rgba(137, 200, 255, ${0.4 + midIntensity * 0.3})`;
+    g.lineWidth = 2;
     g.beginPath();
-    g.moveTo(w/2 - 10, centerY);
-    g.lineTo(w/2 + 10, centerY);
-    g.moveTo(w/2, centerY - 10);
-    g.lineTo(w/2, centerY + 10);
+    g.arc(centerX, centerY, 25 + midIntensity * 15, radarSweep * 1.3, radarSweep * 1.3 + 0.6);
+    g.stroke();
+    
+    // Pulsing center crosshair
+    const pulseIntensity = 0.5 + Math.sin(radarSweep * 3) * 0.3 + avgIntensity * 0.4;
+    g.strokeStyle = `rgba(209, 168, 90, ${0.6 + pulseIntensity * 0.4})`;
+    g.lineWidth = 1 + pulseIntensity;
+    g.beginPath();
+    g.moveTo(centerX - 15 * pulseIntensity, centerY);
+    g.lineTo(centerX + 15 * pulseIntensity, centerY);
+    g.moveTo(centerX, centerY - 15 * pulseIntensity);
+    g.lineTo(centerX, centerY + 15 * pulseIntensity);
+    g.stroke();
+    
+    // Frequency-based particle effects
+    for(let i=0;i<16;i++){
+      if(buffer[i*8] > 100){
+        const angle = (i / 16) * Math.PI * 2 + radarSweep;
+        const radius = 30 + (buffer[i*8] / 255) * 40;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        
+        g.fillStyle = `rgba(255, 255, 255, ${0.6 + (buffer[i*8] / 255) * 0.4})`;
+        g.beginPath();
+        g.arc(x, y, 1 + (buffer[i*8] / 255) * 2, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+    
+    // Audio waveform visualization at bottom
+    const waveformHeight = 20;
+    const waveformY = h - waveformHeight - 10;
+    g.strokeStyle = `rgba(209, 168, 90, ${0.6 + avgIntensity * 0.4})`;
+    g.lineWidth = 2;
+    g.beginPath();
+    
+    for(let i=0;i<w;i+=2){
+      const bufferIndex = Math.floor((i/w) * buffer.length);
+      const amplitude = (buffer[bufferIndex] / 255) * waveformHeight;
+      const y = waveformY + (waveformHeight - amplitude);
+      
+      if(i === 0) g.moveTo(i, y);
+      else g.lineTo(i, y);
+    }
     g.stroke();
   }
   draw();
@@ -184,9 +246,11 @@ async function handlePlay(trackIndex = null) {
   if(audio.paused){
     await audio.play();
     playBtn.textContent='❚❚ Pause';
+    startAlbumArtCycle(); // Resume album art cycling
   } else {
     audio.pause();
     playBtn.textContent='► Play';
+    stopAlbumArtCycle(); // Stop album art cycling when paused
   }
 }
 
@@ -218,6 +282,27 @@ function goSlide(i){
   $$('.slide')[i].classList.add('active');
   $$('.indicator')[i].classList.add('active');
   state.idx = i;
+}
+
+// Auto-cycle album art during playback
+let albumArtCycleInterval = null;
+
+function startAlbumArtCycle() {
+  if (albumArtCycleInterval) return; // Already cycling
+  
+  albumArtCycleInterval = setInterval(() => {
+    if (state.ctx && state.ctx.state === 'running') {
+      const nextIndex = (state.idx + 1) % state.tracks.length;
+      goSlide(nextIndex);
+    }
+  }, 3000); // Change every 3 seconds
+}
+
+function stopAlbumArtCycle() {
+  if (albumArtCycleInterval) {
+    clearInterval(albumArtCycleInterval);
+    albumArtCycleInterval = null;
+  }
 }
 
 function buildTrackList(){
@@ -291,31 +376,34 @@ async function playTrack(i){
   if (typeof initAudioContext === 'function') {
     initAudioContext();
   }
-  
+
   // Wait a moment for AudioContext to be ready
   if (!state.nodes || !state.ctx) {
     console.log('AudioContext not ready yet');
     return;
   }
-  
+
   state.idx = i;
   const t = state.tracks[i];
   const {audio, playBtn} = state.nodes;
-  
+
   // Update UI first for better UX
   $$('.track').forEach(e=>e.classList.remove('playing'));
   const row = document.querySelector(`.track[data-track="${i}"]`);
   if(row) row.classList.add('playing');
   goSlide(i);
-  
+
   // Load and play audio
   audio.src = t.src;
   audio.load(); // Force reload for better compatibility
-  
+
   try {
     await state.ctx.resume();
     await audio.play();
     playBtn.textContent='❚❚ Pause';
+    
+    // Start auto-cycling album art
+    startAlbumArtCycle();
   } catch (error) {
     console.log('Playback error:', error);
     playBtn.textContent='► Play';
